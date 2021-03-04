@@ -23,6 +23,7 @@ type commonState struct {
 	history           []string
 	historyMutex      sync.RWMutex
 	completer         WordCompleter
+	hitser            Hitser
 	columns           int
 	killRing          *ring.Ring
 	ctrlCAborts       bool
@@ -259,4 +260,19 @@ func (s *State) promptUnsupported(p string) (string, error) {
 		return "", err
 	}
 	return string(linebuf), nil
+}
+
+// Hitser is used to return hits, color code, bold
+// the parame line is a string that user inputed, this function should
+// return hits string, color code, is bold
+// if line is "hello", and the hits is "world", this function should
+// return "world"
+// this function will be called when key down, some special control key
+// will not call it
+type Hitser func(line string) (string, int, bool)
+
+// SetHitsCallback sets the Hiter function that Liner will show
+// hits string when the user intput word.
+func (s *State) SetHitsCallback(f Hitser) {
+	s.hitser = f
 }

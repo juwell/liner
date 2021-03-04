@@ -43,6 +43,14 @@ func (s *State) emitNewLine() {
 	fmt.Print("\n")
 }
 
+func (s *State) colorString(str string, colorCode int, isBold bool) {
+	b := 0
+	if isBold {
+		b = 1
+	}
+	fmt.Printf("\033[%d;%d;49m%s\033[0m", b, colorCode, str)
+}
+
 type winSize struct {
 	row, col       uint16
 	xpixel, ypixel uint16

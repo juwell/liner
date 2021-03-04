@@ -1,6 +1,7 @@
 package liner
 
 import (
+	"fmt"
 	"unsafe"
 )
 
@@ -69,4 +70,12 @@ func (s *State) getColumns() {
 	var sbi consoleScreenBufferInfo
 	procGetConsoleScreenBufferInfo.Call(uintptr(s.hOut), uintptr(unsafe.Pointer(&sbi)))
 	s.columns = int(sbi.dwSize.x)
+}
+
+func (s *State) colorString(str string, colorCode int, isBold bool) {
+	b := 0
+	if isBold {
+		b = 1
+	}
+	fmt.Printf("\033[%d;%d;49m%s\033[0m", b, colorCode, str)
 }

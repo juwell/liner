@@ -122,6 +122,7 @@ func (s *State) refreshSingleLine(prompt []rune, buf []rune, pos int) error {
 	if pLen+bLen < s.columns {
 		_, err = fmt.Print(string(buf))
 		s.eraseLine()
+		s.refreshHits(string(buf))
 		s.cursorPos(pLen + pos)
 	} else {
 		// Find space available
@@ -160,6 +161,7 @@ func (s *State) refreshSingleLine(prompt []rune, buf []rune, pos int) error {
 
 		// Set cursor position
 		s.eraseLine()
+		s.refreshHits(string(buf))
 		s.cursorPos(pLen + pos)
 	}
 	return err
@@ -210,6 +212,7 @@ func (s *State) refreshMultiLine(prompt []rune, buf []rune, pos int) error {
 	if _, err := fmt.Print(string(buf)); err != nil {
 		return err
 	}
+	s.refreshHits(string(buf))
 
 	/* If we are at the very end of the screen with our prompt, we need to
 	 * emit a newline and move the prompt to the first column. */
@@ -843,8 +846,8 @@ mainLoop:
 				} else {
 					line = append(line[:pos], append([]rune{v}, line[pos:]...)...)
 					pos++
-					s.needRefresh = true
 				}
+				s.needRefresh = true
 			}
 		case action:
 			switch v {
@@ -995,7 +998,8 @@ mainLoop:
 			}
 			s.needRefresh = true
 		}
-		if s.needRefresh && !s.inputWaiting() {
+		
+		if s.needRefresh /*&& !s.inputWaiting()*/ {
 			err := s.refresh(p, line, pos)
 			if err != nil {
 				return "", err
@@ -1165,5 +1169,14 @@ func (s *State) eraseWord(pos int, line []rune, killAction int) (int, []rune, in
 func (s *State) doBeep() {
 	if !s.noBeep {
 		fmt.Print(beep)
+	}
+}
+
+func (s *State) refreshHits(buf string) {
+	if s.hitser != nil {
+		hits, color, bold := s.hitser(buf)
+		if len(hits) > 0 {
+			s.colorString(hits, color, bold)
+		}
 	}
 }
